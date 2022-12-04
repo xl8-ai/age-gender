@@ -82,6 +82,15 @@ def predict_age_gender():
 
     return response_pickled
 
+@app.route("/shutdown", methods=["GET"])
+def shutdown():
+    from flask import jsonify
+    import os
+    import signal
+
+    os.kill(os.getpid(), signal.SIGINT)
+    return jsonify({ "success": True, "message": "Server is shutting down..." })
+
 
 if __name__ == "__main__":
 
