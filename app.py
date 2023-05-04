@@ -1,5 +1,6 @@
 import io
 import logging
+import threading
 
 import jsonpickle
 import numpy as np
@@ -18,6 +19,7 @@ logging.basicConfig(
 
 # a light-weight flask app
 app = Flask(__name__)
+lock = threading.Lock()
 
 models = {"age": None, "gender": None}
 
@@ -59,6 +61,8 @@ def predict_age_gender():
     embeddings = embeddings.reshape(-1, 512).astype(np.float32)
 
     app.logger.debug(f"extracting gender and age from {embeddings.shape[0]} faces ...")
+    app.logger.info(f"acquire lock...")
+    lock.acquire()
 
     genders = []
     ages = []
@@ -73,6 +77,7 @@ def predict_age_gender():
         genders.append(gender)
         ages.append(age)
 
+    lock.release()
     app.logger.debug(f"gender and age extracted!")
 
     response = {"ages": ages, "genders": genders}
