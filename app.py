@@ -62,22 +62,20 @@ def predict_age_gender():
 
     app.logger.debug(f"extracting gender and age from {embeddings.shape[0]} faces ...")
     app.logger.info(f"acquire lock...")
-    lock.acquire()
+    with lock:
+        genders = []
+        ages = []
 
-    genders = []
-    ages = []
+        for embedding in tqdm(embeddings):
+            embedding = embedding.reshape(1, 512)
+            gender_mean, gender_entropy = forward_mc(models["gender"], embedding)
+            age_mean, age_entropy = forward_mc(models["age"], embedding)
+            gender = {"m": 1 - gender_mean, "f": gender_mean, "entropy": gender_entropy}
+            age = {"mean": age_mean, "entropy": age_entropy}
 
-    for embedding in tqdm(embeddings):
-        embedding = embedding.reshape(1, 512)
-        gender_mean, gender_entropy = forward_mc(models["gender"], embedding)
-        age_mean, age_entropy = forward_mc(models["age"], embedding)
-        gender = {"m": 1 - gender_mean, "f": gender_mean, "entropy": gender_entropy}
-        age = {"mean": age_mean, "entropy": age_entropy}
+            genders.append(gender)
+            ages.append(age)
 
-        genders.append(gender)
-        ages.append(age)
-
-    lock.release()
     app.logger.debug(f"gender and age extracted!")
 
     response = {"ages": ages, "genders": genders}
