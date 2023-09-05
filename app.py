@@ -85,4 +85,4 @@ def predict_age_gender():
 
 if __name__ == "__main__":
 
-    app.run(host="0.0.0.0", port=10003)
+    app.run(host="0.0.0.0", port=20003)
